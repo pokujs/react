@@ -83,6 +83,31 @@ type NormalizedMetricsOptions = {
 	reporter?: (summary: ReactMetricsSummary) => void;
 };
 
+type RuntimeSupport = {
+	supportsNodeLikeImport: boolean;
+	supportsDenoPreload: boolean;
+};
+
+type BuildRunnerCommandInput = {
+	runtime: string;
+	command: string[];
+	file: string;
+	domSetupPath: string;
+};
+
+type BuildRunnerCommandOutput = {
+	shouldHandle: boolean;
+	command: string[];
+};
+
+type EnvSnapshot = {
+	previousDomUrl: string | undefined;
+	previousMetricsFlag: string | undefined;
+};
+
+const DEFAULT_TOP_N = 5;
+const DEFAULT_MIN_DURATION_MS = 0;
+
 const isRenderMetricMessage = (message: unknown): message is RenderMetricMessage => {
 	if (!message || typeof message !== 'object') return false;
 	return (message as Record<string, unknown>).type === 'POKU_REACT_RENDER_METRIC';
@@ -94,6 +119,19 @@ const getComponentName = (componentName: unknown) =>
 		: 'AnonymousComponent';
 
 const isTsxImport = (arg: string) => arg === '--import=tsx' || arg === '--loader=tsx';
+const isNodeRuntime = (runtime: string) => runtime === 'node';
+const isBunRuntime = (runtime: string) => runtime === 'bun';
+const isDenoRuntime = (runtime: string) => runtime === 'deno';
+
+const getRuntimeSupport = (runtime: string): RuntimeSupport => ({
+	supportsNodeLikeImport: isNodeRuntime(runtime) || isBunRuntime(runtime),
+	supportsDenoPreload: isDenoRuntime(runtime),
+});
+
+const canHandleRuntime = (runtime: string) => {
+	const support = getRuntimeSupport(runtime);
+	return support.supportsNodeLikeImport || support.supportsDenoPreload;
+};
 
 const resolveDomSetupPath = (adapter: ReactDomAdapter | undefined) => {
  	if (!adapter || adapter === 'happy-dom') return happyDomSetupPath;
@@ -102,32 +140,41 @@ const resolveDomSetupPath = (adapter: ReactDomAdapter | undefined) => {
  	return resolve(process.cwd(), adapter.setupModule);
 };
 
+const getPositiveIntegerOrDefault = (value: unknown, fallback: number) => {
+	const numeric = Number(value);
+	if (!Number.isFinite(numeric) || numeric <= 0) return fallback;
+	return Math.floor(numeric);
+};
+
+const getNonNegativeNumberOrDefault = (value: unknown, fallback: number) => {
+	const numeric = Number(value);
+	if (!Number.isFinite(numeric) || numeric < 0) return fallback;
+	return numeric;
+};
+
 const normalizeMetricsOptions = (
 	metrics: ReactTestingPluginOptions['metrics'],
 ): NormalizedMetricsOptions => {
 	if (metrics === true) {
 		return {
 			enabled: true,
-			topN: 5,
-			minDurationMs: 0,
+			topN: DEFAULT_TOP_N,
+			minDurationMs: DEFAULT_MIN_DURATION_MS,
 		};
 	}
 
 	if (!metrics) {
 		return {
 			enabled: false,
-			topN: 5,
-			minDurationMs: 0,
+			topN: DEFAULT_TOP_N,
+			minDurationMs: DEFAULT_MIN_DURATION_MS,
 		};
 	}
 
 	const normalized: NormalizedMetricsOptions = {
 		enabled: metrics.enabled ?? true,
-		topN: Number.isFinite(metrics.topN) && Number(metrics.topN) > 0 ? Math.floor(Number(metrics.topN)) : 5,
-		minDurationMs:
-			Number.isFinite(metrics.minDurationMs) && Number(metrics.minDurationMs) >= 0
-				? Number(metrics.minDurationMs)
-				: 0,
+		topN: getPositiveIntegerOrDefault(metrics.topN, DEFAULT_TOP_N),
+		minDurationMs: getNonNegativeNumberOrDefault(metrics.minDurationMs, DEFAULT_MIN_DURATION_MS),
 	};
 
 	if (metrics.reporter) normalized.reporter = metrics.reporter;
@@ -135,16 +182,49 @@ const normalizeMetricsOptions = (
 	return normalized;
 };
 
-/**
- * Create a Poku plugin that prepares DOM globals and TSX execution for React tests.
- */
-export const createReactTestingPlugin = (options: ReactTestingPluginOptions = {}) => {
-	const metrics: RenderMetric[] = [];
-	const previousDomUrl = process.env.POKU_REACT_DOM_URL;
-	const previousMetricsFlag = process.env.POKU_REACT_ENABLE_METRICS;
-	const domSetupPath = resolveDomSetupPath(options.dom);
-	const metricsOptions = normalizeMetricsOptions(options.metrics);
+const buildRunnerCommand = ({
+	runtime,
+	command,
+	file,
+	domSetupPath,
+}: BuildRunnerCommandInput): BuildRunnerCommandOutput => {
+	const support = getRuntimeSupport(runtime);
 
+	if (!support.supportsNodeLikeImport && !support.supportsDenoPreload) {
+		return { shouldHandle: false, command };
+	}
+
+	if (!reactExtensions.has(extname(file))) {
+		return { shouldHandle: false, command };
+	}
+
+	const fileIndex = command.lastIndexOf(file);
+	if (fileIndex === -1) return { shouldHandle: false, command };
+
+	const beforeFile = command.slice(1, fileIndex);
+	const afterFile = command.slice(fileIndex + 1);
+
+	const hasTsx = beforeFile.some(isTsxImport);
+	const hasNodeLikeDomSetup = beforeFile.some((arg) => arg === `--import=${domSetupPath}`);
+	const hasDenoDomSetup = beforeFile.some((arg) => arg === `--preload=${domSetupPath}`);
+
+	const extraImports: string[] = [];
+	if (isNodeRuntime(runtime) && !hasTsx) extraImports.push('--import=tsx');
+	if (support.supportsNodeLikeImport && !hasNodeLikeDomSetup) extraImports.push(`--import=${domSetupPath}`);
+	if (support.supportsDenoPreload && !hasDenoDomSetup) extraImports.push(`--preload=${domSetupPath}`);
+
+	return {
+		shouldHandle: true,
+		command: [runtime, ...beforeFile, ...extraImports, file, ...afterFile],
+	};
+};
+
+const captureEnvSnapshot = (): EnvSnapshot => ({
+	previousDomUrl: process.env.POKU_REACT_DOM_URL,
+	previousMetricsFlag: process.env.POKU_REACT_ENABLE_METRICS,
+});
+
+const applyEnvironmentOptions = (options: ReactTestingPluginOptions, metricsOptions: NormalizedMetricsOptions) => {
 	if (options.domUrl) {
 		process.env.POKU_REACT_DOM_URL = options.domUrl;
 	}
@@ -152,29 +232,80 @@ export const createReactTestingPlugin = (options: ReactTestingPluginOptions = {}
 	if (metricsOptions.enabled) {
 		process.env.POKU_REACT_ENABLE_METRICS = '1';
 	}
+};
+
+const restoreEnvironmentOptions = (snapshot: EnvSnapshot) => {
+	if (typeof snapshot.previousDomUrl === 'undefined') {
+		delete process.env.POKU_REACT_DOM_URL;
+	} else {
+		process.env.POKU_REACT_DOM_URL = snapshot.previousDomUrl;
+	}
+
+	if (typeof snapshot.previousMetricsFlag === 'undefined') {
+		delete process.env.POKU_REACT_ENABLE_METRICS;
+	} else {
+		process.env.POKU_REACT_ENABLE_METRICS = snapshot.previousMetricsFlag;
+	}
+};
+
+const selectTopSlowestMetrics = (metrics: RenderMetric[], options: NormalizedMetricsOptions) =>
+	[...metrics]
+		.filter((metric) => metric.durationMs >= options.minDurationMs)
+		.sort((a, b) => b.durationMs - a.durationMs)
+		.slice(0, options.topN);
+
+const createMetricsSummary = (
+	metrics: RenderMetric[],
+	options: NormalizedMetricsOptions,
+): ReactMetricsSummary | null => {
+	if (!options.enabled || metrics.length === 0) return null;
+
+	const topSlowest = selectTopSlowestMetrics(metrics, options);
+	if (topSlowest.length === 0) return null;
+
+	return {
+		totalCaptured: metrics.length,
+		totalReported: topSlowest.length,
+		topSlowest,
+	};
+};
+
+const printMetricsSummary = (summary: ReactMetricsSummary) => {
+	const lines = summary.topSlowest.map(
+		(metric) =>
+			`  - ${metric.componentName} in ${metric.file}: ${metric.durationMs.toFixed(2)}ms`,
+	);
+
+	console.log('\n[poku-react-testing] Slowest component renders');
+	for (const line of lines) console.log(line);
+};
+
+/**
+ * Create a Poku plugin that prepares DOM globals and TSX execution for React tests.
+ */
+export const createReactTestingPlugin = (options: ReactTestingPluginOptions = {}) => {
+	const metrics: RenderMetric[] = [];
+	const envSnapshot = captureEnvSnapshot();
+	const domSetupPath = resolveDomSetupPath(options.dom);
+	const metricsOptions = normalizeMetricsOptions(options.metrics);
+
+	applyEnvironmentOptions(options, metricsOptions);
 
 	return definePlugin({
 		name: 'react-testing',
 		ipc: metricsOptions.enabled,
 
 		runner(command, file) {
-			if (command[0] !== 'node') return command;
-			if (!reactExtensions.has(extname(file))) return command;
+			const runtime = command[0];
+			if (!runtime) return command;
+			const result = buildRunnerCommand({
+				runtime,
+				command,
+				file,
+				domSetupPath,
+			});
 
-			const fileIndex = command.lastIndexOf(file);
-			if (fileIndex === -1) return command;
-
-			const beforeFile = command.slice(1, fileIndex);
-			const afterFile = command.slice(fileIndex + 1);
-
-			const hasTsx = beforeFile.some(isTsxImport);
-			const hasDomSetup = beforeFile.some((arg) => arg === `--import=${domSetupPath}`);
-
-			const extraImports: string[] = [];
-			if (!hasTsx) extraImports.push('--import=tsx');
-			if (!hasDomSetup) extraImports.push(`--import=${domSetupPath}`);
-
-			return ['node', ...beforeFile, ...extraImports, file, ...afterFile];
+			return result.command;
 		},
 
 		onTestProcess(child, file) {
@@ -192,45 +323,17 @@ export const createReactTestingPlugin = (options: ReactTestingPluginOptions = {}
 		},
 
 		teardown() {
-			if (typeof previousDomUrl === 'undefined') {
-				delete process.env.POKU_REACT_DOM_URL;
-			} else {
-				process.env.POKU_REACT_DOM_URL = previousDomUrl;
-			}
+			restoreEnvironmentOptions(envSnapshot);
 
-			if (typeof previousMetricsFlag === 'undefined') {
-				delete process.env.POKU_REACT_ENABLE_METRICS;
-			} else {
-				process.env.POKU_REACT_ENABLE_METRICS = previousMetricsFlag;
-			}
-
-			if (!metricsOptions.enabled || metrics.length === 0) return;
-
-			const topSlowest = [...metrics]
-				.filter((metric) => metric.durationMs >= metricsOptions.minDurationMs)
-				.sort((a, b) => b.durationMs - a.durationMs)
-				.slice(0, metricsOptions.topN);
-
-			if (topSlowest.length === 0) return;
-
-			const summary: ReactMetricsSummary = {
-				totalCaptured: metrics.length,
-				totalReported: topSlowest.length,
-				topSlowest,
-			};
+			const summary = createMetricsSummary(metrics, metricsOptions);
+			if (!summary) return;
 
 			if (metricsOptions.reporter) {
 				metricsOptions.reporter(summary);
 				return;
 			}
 
-			const lines = topSlowest.map(
-				(metric) =>
-					`  - ${metric.componentName} in ${metric.file}: ${metric.durationMs.toFixed(2)}ms`,
-			);
-
-			console.log('\n[poku-react-testing] Slowest component renders');
-			for (const line of lines) console.log(line);
+			printMetricsSummary(summary);
 		},
 	});
 };
@@ -239,3 +342,17 @@ export const createReactTestingPlugin = (options: ReactTestingPluginOptions = {}
  * Alias for `createReactTestingPlugin`.
  */
 export const reactTestingPlugin = createReactTestingPlugin;
+
+export const __internal = {
+	buildRunnerCommand,
+	canHandleRuntime,
+	captureEnvSnapshot,
+	applyEnvironmentOptions,
+	restoreEnvironmentOptions,
+	normalizeMetricsOptions,
+	selectTopSlowestMetrics,
+	createMetricsSummary,
+	getComponentName,
+	isRenderMetricMessage,
+	resolveDomSetupPath,
+};
