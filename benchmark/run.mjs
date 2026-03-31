@@ -368,7 +368,6 @@ console.log(`  Results saved → benchmark/results.json`);
 // ─── generate REPORT.md ──────────────────────────────────────────────────────
 
 function formatTable(rows, headers) {
-  const cols = headers.length;
   const widths = headers.map((h, i) =>
     Math.max(h.length, ...rows.map((r) => String(r[i]).length))
   );
@@ -412,14 +411,6 @@ const pokuJsdom = findResult('poku + jsdom');
 const jestJsdom = findResult('jest + jsdom');
 const vitestJsdom = findResult('vitest + jsdom');
 const vitestHappy = findResult('vitest + happy-dom');
-
-function compareNote(a, b, aLabel, bLabel) {
-  if (!a || !b) return '_data unavailable_';
-  const diff = ((b.mean - a.mean) / a.mean) * 100;
-  const abs = Math.abs(diff).toFixed(0);
-  if (diff > 0) return `**${bLabel}** is ~${abs}% slower than **${aLabel}**`;
-  return `**${bLabel}** is ~${abs}% faster than **${aLabel}**`;
-}
 
 const happyVsJsdomPoku =
   pokuHappy && pokuJsdom
