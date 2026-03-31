@@ -52,7 +52,7 @@
     "jsdom"
   ],
   "author": "",
-  "license": "ISC",
+  "license": "MIT",
   "publishConfig": {
     "access": "public",
     "provenance": true

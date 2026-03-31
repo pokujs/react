@@ -161,4 +161,4 @@ reactTestingPlugin({
 
 ## License
 
-[ISC](./LICENSE)
+[MIT](./LICENSE)
