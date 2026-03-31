@@ -39,7 +39,7 @@ jobs:
           node-version: lts/*
 
       - name: ➕ Actions - Setup Deno
-        uses: denoland/setup-deno@v1
+        uses: denoland/setup-deno@v2
         with:
           deno-version: ${{ matrix.deno-version }}
 
