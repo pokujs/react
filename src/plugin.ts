@@ -66,11 +66,20 @@ export const createReactTestingPlugin = (
         runtimeOptionArgs,
       });
 
+      if (!result.shouldHandle) return command;
       return result.command;
     },
 
     onTestProcess(child, file) {
       if (!metricsOptions.enabled) return;
+
+      // Optimization: Prevent unbounded memory growth on massive suites.
+      // Prune array back down periodically to keep only top candidates.
+      const maybePruneMetrics = () => {
+        if (metrics.length > metricsOptions.topN * 10) {
+          metrics = selectTopSlowestMetrics(metrics, metricsOptions);
+        }
+      };
 
       child.on('message', (message) => {
         if (isRenderMetricBatchMessage(message)) {
@@ -84,10 +93,7 @@ export const createReactTestingPlugin = (
             });
           }
 
-          if (metrics.length > metricsOptions.topN * 10) {
-            metrics = selectTopSlowestMetrics(metrics, metricsOptions);
-          }
-
+          maybePruneMetrics();
           return;
         }
 
@@ -101,11 +107,7 @@ export const createReactTestingPlugin = (
           durationMs,
         });
 
-        // Optimization: Prevent unbounded memory growth on massive suites
-        // Prune array back down periodically to keep only top candidates
-        if (metrics.length > metricsOptions.topN * 10) {
-          metrics = selectTopSlowestMetrics(metrics, metricsOptions);
-        }
+        maybePruneMetrics();
       });
     },
 

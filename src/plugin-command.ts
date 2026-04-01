@@ -56,7 +56,16 @@ export const resolveDomSetupPath = (adapter: ReactDomAdapter | undefined) => {
   if (!adapter || adapter === 'happy-dom') return happyDomSetupPath;
   if (adapter === 'jsdom') return jsdomSetupPath;
 
-  return resolve(process.cwd(), adapter.setupModule);
+  const customPath = resolve(process.cwd(), adapter.setupModule);
+
+  if (!existsSync(customPath)) {
+    throw new Error(
+      `[poku-react-testing] Custom DOM setup module not found: "${customPath}"\n` +
+        `Check the "dom.setupModule" option in your poku.config.js.`
+    );
+  }
+
+  return customPath;
 };
 
 export const buildRunnerCommand = ({

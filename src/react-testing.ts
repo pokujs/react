@@ -26,6 +26,22 @@ type InternalMounted = {
 
 const mountedRoots = new Set<InternalMounted>();
 
+const unmountMounted = (mounted: InternalMounted) => {
+  try {
+    act(() => {
+      mounted.root?.unmount();
+    });
+  } finally {
+    if (mounted.ownsContainer && mounted.container?.parentNode) {
+      mounted.container.parentNode.removeChild(mounted.container);
+    }
+
+    mounted.root = null;
+    mounted.container = null;
+    mountedRoots.delete(mounted);
+  }
+};
+
 const getNow: () => number =
   typeof performance !== 'undefined' && typeof performance.now === 'function'
     ? performance.now.bind(performance)
@@ -221,20 +237,7 @@ export const render = (
 
   const unmount = () => {
     if (!mountedRoots.has(mounted)) return;
-
-    try {
-      act(() => {
-        mounted.root?.unmount();
-      });
-    } finally {
-      if (mounted.ownsContainer && mounted.container?.parentNode) {
-        mounted.container.parentNode.removeChild(mounted.container);
-      }
-
-      mounted.root = null;
-      mounted.container = null;
-      mountedRoots.delete(mounted);
-    }
+    unmountMounted(mounted);
   };
 
   const rerender = (nextUi: ReactElement) => {
@@ -286,7 +289,7 @@ export const renderHook = <
     return null;
   };
 
-  const initialProps = options.initialProps || ({} as Props);
+  const initialProps = options.initialProps ?? ({} as Props);
   const view = render(React.createElement(HookHarness, initialProps), options);
 
   return {
@@ -304,22 +307,8 @@ export const renderHook = <
  * Unmount all rendered roots and remove owned containers from the document.
  */
 export const cleanup = () => {
-  const mountedEntries = [...mountedRoots];
-
-  for (const mounted of mountedEntries) {
-    try {
-      act(() => {
-        mounted.root?.unmount();
-      });
-    } finally {
-      if (mounted.ownsContainer && mounted.container?.parentNode) {
-        mounted.container.parentNode.removeChild(mounted.container);
-      }
-
-      mounted.root = null;
-      mounted.container = null;
-      mountedRoots.delete(mounted);
-    }
+  for (const mounted of [...mountedRoots]) {
+    unmountMounted(mounted);
   }
 
   flushMetricBuffer();
@@ -327,22 +316,18 @@ export const cleanup = () => {
 
 /**
  * Global Testing Library `screen` bound to `document.body`.
+ *
+ * Uses a Proxy so newly-added queries from future @testing-library/dom versions
+ * are automatically forwarded without needing manual rebinding.
  */
-const baseScreenQueries = getQueriesForElement(document.body) as Record<
-  string,
-  unknown
->;
+const baseScreenQueries = getQueriesForElement(document.body);
 
-const boundScreenQueries: Record<string, unknown> = {};
-for (const key of Object.keys(baseScreenQueries)) {
-  const value = baseScreenQueries[key];
-  boundScreenQueries[key] =
-    typeof value === 'function'
-      ? (value as (...args: unknown[]) => unknown).bind(baseScreenQueries)
-      : value;
-}
-
-export const screen = boundScreenQueries as Screen;
+export const screen = new Proxy(baseScreenQueries, {
+  get(target, prop, receiver) {
+    const value = Reflect.get(target, prop, receiver);
+    return typeof value === 'function' ? value.bind(target) : value;
+  },
+}) as Screen;
 
 /**
  * Testing Library `fireEvent` wrapped in React `act` for synchronous state flushing.
@@ -388,4 +373,7 @@ for (const key of Object.keys(baseFireEventInstance) as Array<
 
 export const fireEvent = wrappedFireEvent;
 
+// Re-export all remaining @testing-library/dom utilities.
+// Note: local named exports above (act, cleanup, fireEvent, render, renderHook,
+// screen) shadow any same-named re-exports from this star export in ESM.
 export * from '@testing-library/dom';
