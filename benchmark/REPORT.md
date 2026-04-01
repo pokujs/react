@@ -1,6 +1,6 @@
 # React Testing Framework Benchmark Report
 
-> Generated: Tue, 31 Mar 2026 21:00:50 GMT
+> Generated: Wed, 01 Apr 2026 12:41:50 GMT
 
 ## Environment
 
@@ -39,11 +39,11 @@ Each scenario runs the **same 9 React tests** across 5 test files:
 
 | Scenario           | Mean   | Min    | Max    | Stdev  | Peak RSS | vs poku+happy-dom |
 |--------------------|--------|--------|--------|--------|----------|-------------------|
-| poku + happy-dom   | 1.073s | 0.996s | 1.230s | 0.085s | 163.3 MB | *(baseline)*      |
-| poku + jsdom       | 1.060s | 1.007s | 1.177s | 0.060s | 163.4 MB | -1%               |
-| jest + jsdom       | 0.859s | 0.779s | 0.929s | 0.050s | 206.2 MB | -20%              |
-| vitest + jsdom     | 0.964s | 0.950s | 0.987s | 0.017s | 148.0 MB | -10%              |
-| vitest + happy-dom | 0.838s | 0.812s | 0.864s | 0.021s | 116.3 MB | -22%              |
+| poku + happy-dom   | 0.560s | 0.515s | 0.600s | 0.033s | 154.3 MB | *(baseline)*      |
+| poku + jsdom       | 0.444s | 0.429s | 0.451s | 0.008s | 157.1 MB | -21%              |
+| jest + jsdom       | 1.040s | 0.975s | 1.135s | 0.056s | 203.4 MB | +86%              |
+| vitest + jsdom     | 1.193s | 1.129s | 1.269s | 0.057s | 152.3 MB | +113%             |
+| vitest + happy-dom | 1.041s | 0.990s | 1.126s | 0.047s | 117.1 MB | +86%              |
 
 > **Wall-clock time** is measured with `performance.now()` around the child-process spawn.
 > **Peak RSS** is captured via `/usr/bin/time -l` on macOS (bytes → MB).
@@ -53,44 +53,44 @@ Each scenario runs the **same 9 React tests** across 5 test files:
 
 ### Overall ranking (mean wall-clock time)
 
-1. **vitest + happy-dom** — 0.838s
-2. **jest + jsdom** — 0.859s
-3. **vitest + jsdom** — 0.964s
-4. **poku + jsdom** — 1.060s
-5. **poku + happy-dom** — 1.073s
+1. **poku + jsdom** — 0.444s
+2. **poku + happy-dom** — 0.560s
+3. **jest + jsdom** — 1.040s
+4. **vitest + happy-dom** — 1.041s
+5. **vitest + jsdom** — 1.193s
 
 ### Speed comparison
 
-- poku+happy-dom vs jest+jsdom: jest is **-20% faster**
-- poku+happy-dom vs vitest+jsdom: vitest is **-10% faster**
-- jest+jsdom vs vitest+jsdom: vitest is **12% slower** than jest
+- poku+happy-dom vs jest+jsdom: jest is **86% slower**
+- poku+happy-dom vs vitest+jsdom: vitest is **113% slower**
+- jest+jsdom vs vitest+jsdom: vitest is **15% slower** than jest
 
 ### DOM adapter impact
 
-- **poku**: happy-dom vs jsdom — jsdom is **-1% faster**
+- **poku**: happy-dom vs jsdom — jsdom is **-21% faster**
 - **vitest**: happy-dom vs jsdom — jsdom is **15% slower**
 
 ### Memory footprint
 
-- **vitest + happy-dom**: 116.3 MB peak RSS
-- **vitest + jsdom**: 148.0 MB peak RSS
-- **poku + happy-dom**: 163.3 MB peak RSS
-- **poku + jsdom**: 163.4 MB peak RSS
-- **jest + jsdom**: 206.2 MB peak RSS
+- **vitest + happy-dom**: 117.1 MB peak RSS
+- **vitest + jsdom**: 152.3 MB peak RSS
+- **poku + happy-dom**: 154.3 MB peak RSS
+- **poku + jsdom**: 157.1 MB peak RSS
+- **jest + jsdom**: 203.4 MB peak RSS
 
 ### Consistency (lower stdev = more predictable)
 
-- **vitest + jsdom**: σ = 0.017s
-- **vitest + happy-dom**: σ = 0.021s
-- **jest + jsdom**: σ = 0.050s
-- **poku + jsdom**: σ = 0.060s
-- **poku + happy-dom**: σ = 0.085s
+- **poku + jsdom**: σ = 0.008s
+- **poku + happy-dom**: σ = 0.033s
+- **vitest + happy-dom**: σ = 0.047s
+- **jest + jsdom**: σ = 0.056s
+- **vitest + jsdom**: σ = 0.057s
 
 ## Key findings
 
-- **Fastest**: vitest + happy-dom — 0.838s mean
-- **Slowest**: poku + happy-dom — 1.073s mean
-- **Speed spread**: 28% difference between fastest and slowest
+- **Fastest**: poku + jsdom — 0.444s mean
+- **Slowest**: vitest + jsdom — 1.193s mean
+- **Speed spread**: 169% difference between fastest and slowest
 
 ### Interpretation
 
