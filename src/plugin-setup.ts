@@ -30,7 +30,7 @@ const registerNodeTsxLoader = async () => {
     return mod.register();
   } catch (error) {
     throw new Error(
-      '[poku-react-testing] isolation "none" in Node.js requires a working "tsx" installation to load .tsx/.jsx test files.',
+      '[@pokujs/react] isolation "none" in Node.js requires a working "tsx" installation to load .tsx/.jsx test files.',
       { cause: error }
     );
   }

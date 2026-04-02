@@ -25,7 +25,7 @@ jobs:
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
           release-type: node
-          package-name: poku-react-testing
+          package-name: '@pokujs/react'
 
       - name: ➕ Actions - Checkout
         uses: actions/checkout@v4

@@ -72,7 +72,7 @@ type MetricsRuntimeState = {
   listenersRegistered: boolean;
 };
 
-const metricsStateKey = Symbol.for('poku-react-testing.metrics-runtime-state');
+const metricsStateKey = Symbol.for('@pokujs/react.metrics-runtime-state');
 
 type MetricsStateGlobal = typeof globalThis & {
   [metricsStateKey]?: MetricsRuntimeState;

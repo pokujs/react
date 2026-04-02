@@ -1,5 +1,5 @@
 {
-  "name": "poku-react-testing",
+  "name": "@pokujs/react",
   "version": "1.2.0",
   "private": false,
   "description": "React testing helpers and Poku plugin for DOM-backed component tests.",
@@ -56,11 +56,11 @@
   "author": "Lojhan",
   "repository": {
     "type": "git",
-    "url": "https://github.com/Lojhan/poku-react-testing"
+    "url": "https://github.com/pokujs/react"
   },
-  "homepage": "https://github.com/Lojhan/poku-react-testing#readme",
+  "homepage": "https://github.com/pokujs/react#readme",
   "bugs": {
-    "url": "https://github.com/Lojhan/poku-react-testing/issues"
+    "url": "https://github.com/pokujs/react/issues"
   },
   "license": "MIT",
   "publishConfig": {
