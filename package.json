@@ -1,6 +1,6 @@
 {
   "name": "@pokujs/react",
-  "version": "1.2.0",
+  "version": "1.2.1",
   "private": false,
   "description": "React testing helpers and Poku plugin for DOM-backed component tests.",
   "type": "module",
