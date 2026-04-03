@@ -23,7 +23,7 @@ const createJSDOMEnvironment = async () => {
     mod = await import('jsdom');
   } catch {
     throw new Error(
-      '[poku-react-testing] DOM adapter "jsdom" requires the "jsdom" package. Install it with "npm install --save-dev jsdom".'
+      '[@pokujs/react] DOM adapter "jsdom" requires the "jsdom" package. Install it with "npm install --save-dev jsdom".'
     );
   }
 

@@ -1,19 +1,19 @@
 <div align="center">
 <img height="180" alt="Poku's Logo" src="https://raw.githubusercontent.com/wellwelwel/poku/main/.github/assets/readme/poku.svg">
 
-# poku-react-testing
+# @pokujs/react
 
 Enjoying **Poku**? [Give him a star to show your support](https://github.com/wellwelwel/poku) 🌟
 
 ---
 
-📘 [**Documentation**](https://github.com/Lojhan/poku-react-testing#readme)
+📘 [**Documentation**](https://github.com/pokujs/react#readme)
 
 </div>
 
 ---
 
-🧪 [**poku-react-testing**](https://github.com/Lojhan/poku-react-testing) is a **Poku** plugin for React component testing with DOM adapters.
+🧪 [**@pokujs/react**](https://github.com/pokujs/react) is a **Poku** plugin for React component testing with DOM adapters.
 
 > [!TIP]
 >
@@ -31,7 +31,7 @@ Enjoying **Poku**? [Give him a star to show your support](https://github.com/wel
 
 ```bash
 # Node.js
-npm i -D poku-react-testing
+npm i -D @pokujs/react
 ```
 
 </td>
@@ -39,7 +39,7 @@ npm i -D poku-react-testing
 
 ```bash
 # Bun
-bun add -d poku-react-testing
+bun add -d @pokujs/react
 ```
 
 </td>
@@ -47,7 +47,7 @@ bun add -d poku-react-testing
 
 ```bash
 # Deno (optional)
-deno add npm:poku-react-testing
+deno add npm:@pokujs/react
 ```
 
 </td>
@@ -83,7 +83,7 @@ npm i -D jsdom
 ```js
 // poku.config.js
 import { defineConfig } from 'poku';
-import { reactTestingPlugin } from 'poku-react-testing/plugin';
+import { reactTestingPlugin } from '@pokujs/react/plugin';
 
 export default defineConfig({
   plugins: [
@@ -99,7 +99,7 @@ export default defineConfig({
 ```tsx
 // tests/my-component.test.tsx
 import { afterEach, assert, test } from 'poku';
-import { cleanup, render, screen } from 'poku-react-testing';
+import { cleanup, render, screen } from '@pokujs/react';
 
 afterEach(cleanup);
 

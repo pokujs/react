@@ -1,4 +1,4 @@
-name: poku-react-testing-codeql
+name: pokujs-react-codeql
 queries:
   - uses: security-extended
   - uses: security-and-quality

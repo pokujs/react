@@ -21,7 +21,7 @@
     "jest-environment-jsdom": "^30.3.0",
     "jsdom": "26.1.0",
     "poku": "4.2.0",
-    "poku-react-testing": "file:..",
+    "@pokujs/react": "file:..",
     "react": "^19.2.4",
     "react-dom": "^19.2.4",
     "vitest": "^3.2.4"

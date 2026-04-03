@@ -156,6 +156,6 @@ export const printMetricsSummary = (summary: ReactMetricsSummary) => {
       `  - ${metric.componentName} in ${metric.file}: ${metric.durationMs.toFixed(2)}ms`
   );
 
-  console.log('\n[poku-react-testing] Slowest component renders');
+  console.log('\n[@pokujs/react] Slowest component renders');
   for (const line of lines) console.log(line);
 };

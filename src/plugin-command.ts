@@ -60,7 +60,7 @@ export const resolveDomSetupPath = (adapter: ReactDomAdapter | undefined) => {
 
   if (!existsSync(customPath)) {
     throw new Error(
-      `[poku-react-testing] Custom DOM setup module not found: "${customPath}"\n` +
+      `[@pokujs/react] Custom DOM setup module not found: "${customPath}"\n` +
         `Check the "dom.setupModule" option in your poku.config.js.`
     );
   }
