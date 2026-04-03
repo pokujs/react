@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.2.1](https://github.com/pokujs/react/compare/v1.2.0...v1.2.1) (2026-04-03)
+
+
+### Bug Fixes
+
+* update package repository URL ([#12](https://github.com/pokujs/react/issues/12)) ([3da8523](https://github.com/pokujs/react/commit/3da85234d70a7ec846a48ea7b066bf82e50763bb))
+
 ## [1.2.0](https://github.com/Lojhan/poku-react-testing/compare/v1.1.0...v1.2.0) (2026-04-01)
 
 
