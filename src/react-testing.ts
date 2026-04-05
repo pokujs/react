@@ -13,6 +13,7 @@ import {
   createRenderMetricsEmitter,
   createScreen,
   getNow,
+  wrapFireEventMethods,
 } from '@pokujs/dom';
 import { parseRuntimeOptions } from './runtime-options.ts';
 
@@ -191,34 +192,15 @@ const wrappedFireEvent = ((...args: Parameters<typeof baseFireEvent>) => {
   return result;
 }) as typeof baseFireEvent;
 
-for (const key of Object.keys(baseFireEventInstance) as Array<
-  keyof typeof baseFireEventInstance
->) {
-  const value = baseFireEventInstance[key];
-
-  if (typeof value !== 'function') {
-    (
-      wrappedFireEvent as unknown as Record<
-        keyof typeof baseFireEventInstance,
-        unknown
-      >
-    )[key] = value;
-    continue;
-  }
-
-  (
-    wrappedFireEvent as unknown as Record<
-      keyof typeof baseFireEventInstance,
-      unknown
-    >
-  )[key] = (...args: unknown[]) => {
+wrapFireEventMethods(
+  wrappedFireEvent as unknown as Record<string, unknown>,
+  baseFireEventInstance as unknown as Record<string, unknown>,
+  (invoke: () => unknown) => {
     let result: unknown;
-    act(() => {
-      result = Reflect.apply(value, baseFireEventInstance, args);
-    });
+    act(() => { result = invoke(); });
     return result;
-  };
-}
+  }
+);
 
 export const fireEvent = wrappedFireEvent;
 

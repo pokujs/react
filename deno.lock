@@ -3,10 +3,10 @@
   "specifiers": {
     "npm:@happy-dom/global-registrator@^20.8.9": "20.8.9",
     "npm:@ianvs/prettier-plugin-sort-imports@^4.7.0": "4.7.1_prettier@3.8.1",
-    "npm:@pokujs/dom@^1.1.0": "1.1.0_@happy-dom+global-registrator@20.8.9_happy-dom@20.8.9_jsdom@26.1.0_poku@4.2.0",
-    "npm:@pokujs/dom@^1.1.1": "1.1.1_happy-dom@20.8.9_jsdom@26.1.0_poku@4.2.0",
+    "npm:@pokujs/dom@^1.1.2": "1.1.2_happy-dom@20.8.9_jsdom@26.1.0_poku@4.2.0",
     "npm:@testing-library/dom@^10.4.1": "10.4.1",
     "npm:@types/jsdom@^28.0.1": "28.0.1",
+    "npm:@types/node@*": "22.15.15",
     "npm:@types/node@^25.5.0": "25.5.2",
     "npm:@types/react-dom@^19.2.3": "19.2.3_@types+react@19.2.14",
     "npm:@types/react@^19.2.14": "19.2.14",
@@ -297,23 +297,8 @@
         "@jridgewell/sourcemap-codec"
       ]
     },
-    "@pokujs/dom@1.1.0_@happy-dom+global-registrator@20.8.9_happy-dom@20.8.9_jsdom@26.1.0_poku@4.2.0": {
-      "integrity": "sha512-0Cp3KLirW4mOXE11l2a0q0b6qsgorh3iqZxd1RiL69amc7uOQm+QJ96ETwr9GRkIfxa2wCPX/0JrKhMNY1T10Q==",
-      "dependencies": [
-        "@happy-dom/global-registrator",
-        "@testing-library/dom",
-        "happy-dom",
-        "jsdom",
-        "poku"
-      ],
-      "optionalPeers": [
-        "@happy-dom/global-registrator",
-        "happy-dom",
-        "jsdom"
-      ]
-    },
-    "@pokujs/dom@1.1.1_happy-dom@20.8.9_jsdom@26.1.0_poku@4.2.0": {
-      "integrity": "sha512-qK9JRz9tDgcO4l+QibqwGaWpDeQDKHP7y0Y9b039ieK86kY51wf0WyOi7iDfeKJQ2Quk9vIKBqDaagzJvaaX/A==",
+    "@pokujs/dom@1.1.2_happy-dom@20.8.9_jsdom@26.1.0_poku@4.2.0": {
+      "integrity": "sha512-Bs9blOGDABsgNdKBoMt7EoB0attpI83VF+LCfc2qU1BVFJQ6bRWFqniNIFWZAJOfT+qlyRcxIITmpQHYlRmLew==",
       "dependencies": [
         "@testing-library/dom",
         "happy-dom",
@@ -1164,13 +1149,13 @@
   },
   "workspace": {
     "dependencies": [
-      "npm:@pokujs/dom@^1.1.0"
+      "npm:@pokujs/dom@^1.1.2"
     ],
     "packageJson": {
       "dependencies": [
         "npm:@happy-dom/global-registrator@^20.8.9",
         "npm:@ianvs/prettier-plugin-sort-imports@^4.7.0",
-        "npm:@pokujs/dom@^1.1.1",
+        "npm:@pokujs/dom@^1.1.2",
         "npm:@testing-library/dom@^10.4.1",
         "npm:@types/jsdom@^28.0.1",
         "npm:@types/node@^25.5.0",
