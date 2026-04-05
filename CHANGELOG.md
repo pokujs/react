@@ -1,5 +1,17 @@
 # Changelog
 
+## [1.3.0](https://github.com/pokujs/react/compare/v1.2.1...v1.3.0) (2026-04-05)
+
+
+### Features
+
+* extract shared DOM/testing core to @pokujs/dom + benchmark suite ([#14](https://github.com/pokujs/react/issues/14)) ([cc60962](https://github.com/pokujs/react/commit/cc6096274a4b736d24031e5523668cf8320f956e))
+
+
+### Bug Fixes
+
+* add missing @pokujs/dom dependency and update to ^1.0.1 ([5b82a9a](https://github.com/pokujs/react/commit/5b82a9ab26cc187e6edd0a0d76d74acd01d6ba2a))
+
 ## [1.2.1](https://github.com/pokujs/react/compare/v1.2.0...v1.2.1) (2026-04-03)
 
 
