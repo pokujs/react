@@ -245,12 +245,20 @@ export const renderHook = <
 
   const initialProps = options.initialProps ?? ({} as Props);
   const view = render(React.createElement(HookHarness, initialProps), options);
+  let currentProps = initialProps;
+
+  const resultRef: { current: Result } = {
+    get current() {
+      return currentResult;
+    },
+  } as { current: Result };
 
   return {
     get result() {
-      return { current: currentResult };
+      return resultRef;
     },
-    rerender(nextProps = initialProps) {
+    rerender(nextProps = currentProps) {
+      currentProps = nextProps;
       view.rerender(React.createElement(HookHarness, nextProps));
     },
     unmount: view.unmount,

@@ -113,6 +113,35 @@ test('renders a heading', () => {
 
 ## Compatibility
 
+### Library Support
+
+| Package | Supported range |
+| ------- | :-------------: |
+| `react` |    `>=18`     |
+| `react-dom` |    `>=18`     |
+| `poku` |   `>=4.1.0`    |
+| `happy-dom` |    `>=20`     |
+| `jsdom` |    `>=22`     |
+
+### Isolation Support
+
+| Isolation mode | Node validation |
+| -------------- | :-------------: |
+| `none`         |       ✅        |
+| `process`      |       ✅        |
+
+Shared-process runs rely on scoped cleanup slots from `@pokujs/dom`, so one test's `cleanup()` no longer tears down another concurrent test's mounted tree.
+
+### Multi-Major Suite
+
+Use this suite to verify React major compatibility locally:
+
+```bash
+npm run test:multi-major
+```
+
+It executes the full adapter tests twice, pinning React 18 and React 19 in sequence.
+
 ### Runtime × DOM Adapter
 
 |                  | Node.js ≥ 20 | Bun ≥ 1 | Deno ≥ 2 |

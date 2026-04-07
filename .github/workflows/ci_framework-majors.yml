@@ -1,0 +1,61 @@
+name: '🔬 CI — Framework Majors'
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - '.github/workflows/ci_framework-majors.yml'
+      - 'src/**'
+      - 'tests/**'
+      - 'run.test.ts'
+      - 'package-lock.json'
+      - 'package.json'
+  pull_request:
+    paths:
+      - '.github/workflows/ci_framework-majors.yml'
+      - 'src/**'
+      - 'tests/**'
+      - 'run.test.ts'
+      - 'package-lock.json'
+      - 'package.json'
+  workflow_dispatch:
+
+jobs:
+  framework-majors:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    strategy:
+      fail-fast: false
+      matrix:
+        react-major: ['18', '19']
+    name: React ${{ matrix.react-major }}
+    steps:
+      - name: ➕ Actions - Checkout
+        uses: actions/checkout@v4
+
+      - name: ➕ Actions - Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+
+      - name: ➕ Cache dependencies
+        uses: actions/cache@v4
+        with:
+          path: ~/.npm
+          key: npm-linux-${{ hashFiles('package-lock.json') }}
+          restore-keys: npm-linux-
+
+      - name: 📦 Installing Dependencies
+        run: npm ci
+
+      - name: 🔁 Pin React ${{ matrix.react-major }}
+        run: |
+          npm install --no-save \
+            react@${{ matrix.react-major }} \
+            react-dom@${{ matrix.react-major }} \
+            @types/react@${{ matrix.react-major }} \
+            @types/react-dom@${{ matrix.react-major }}
+
+      - name: 🔬 React ${{ matrix.react-major }}
+        run: npm test

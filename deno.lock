@@ -3,10 +3,9 @@
   "specifiers": {
     "npm:@happy-dom/global-registrator@^20.8.9": "20.8.9",
     "npm:@ianvs/prettier-plugin-sort-imports@^4.7.0": "4.7.1_prettier@3.8.1",
-    "npm:@pokujs/dom@^1.1.2": "1.1.2_happy-dom@20.8.9_jsdom@26.1.0_poku@4.2.0",
+    "npm:@pokujs/dom@^1.2.0": "1.2.0_happy-dom@20.8.9_jsdom@26.1.0_poku@4.2.0",
     "npm:@testing-library/dom@^10.4.1": "10.4.1",
     "npm:@types/jsdom@^28.0.1": "28.0.1",
-    "npm:@types/node@*": "22.15.15",
     "npm:@types/node@^25.5.0": "25.5.2",
     "npm:@types/react-dom@^19.2.3": "19.2.3_@types+react@19.2.14",
     "npm:@types/react@^19.2.14": "19.2.14",
@@ -14,7 +13,6 @@
     "npm:happy-dom@^20.8.9": "20.8.9",
     "npm:jsdom@^26.1.0": "26.1.0",
     "npm:poku@*": "4.2.0",
-    "npm:poku@4.2.0": "4.2.0",
     "npm:prettier@^3.6.2": "3.8.1",
     "npm:react-dom@^19.2.4": "19.2.4_react@19.2.4",
     "npm:react@^19.2.4": "19.2.4",
@@ -297,8 +295,8 @@
         "@jridgewell/sourcemap-codec"
       ]
     },
-    "@pokujs/dom@1.1.2_happy-dom@20.8.9_jsdom@26.1.0_poku@4.2.0": {
-      "integrity": "sha512-Bs9blOGDABsgNdKBoMt7EoB0attpI83VF+LCfc2qU1BVFJQ6bRWFqniNIFWZAJOfT+qlyRcxIITmpQHYlRmLew==",
+    "@pokujs/dom@1.2.0_happy-dom@20.8.9_jsdom@26.1.0_poku@4.2.0": {
+      "integrity": "sha512-RafJKjW+7skIPF6dl2GLV7nMnvPJzIkWd6nNehJOq3m82OahEDWWBfeWvX/PumZj9liq11/JCMsifUvywfJhAQ==",
       "dependencies": [
         "@testing-library/dom",
         "happy-dom",
@@ -1149,13 +1147,12 @@
   },
   "workspace": {
     "dependencies": [
-      "npm:@pokujs/dom@^1.1.2"
+      "npm:@pokujs/dom@^1.2.0"
     ],
     "packageJson": {
       "dependencies": [
         "npm:@happy-dom/global-registrator@^20.8.9",
         "npm:@ianvs/prettier-plugin-sort-imports@^4.7.0",
-        "npm:@pokujs/dom@^1.1.2",
         "npm:@testing-library/dom@^10.4.1",
         "npm:@types/jsdom@^28.0.1",
         "npm:@types/node@^25.5.0",
@@ -1164,7 +1161,6 @@
         "npm:cross-env@^10.1.0",
         "npm:happy-dom@^20.8.9",
         "npm:jsdom@^26.1.0",
-        "npm:poku@4.2.0",
         "npm:prettier@^3.6.2",
         "npm:react-dom@^19.2.4",
         "npm:react@^19.2.4",
