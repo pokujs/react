@@ -56,3 +56,18 @@ test('tests hook logic directly with renderHook', async () => {
 
   assert.strictEqual(result.current.enabled, true);
 });
+
+test('renderHook.rerender keeps result.current live after destructuring', async () => {
+  const { result, rerender } = renderHook(
+    ({ value }: { value: string }) => value,
+    {
+      initialProps: { value: 'first' },
+    }
+  );
+
+  assert.strictEqual(result.current, 'first');
+
+  rerender({ value: 'second' });
+
+  assert.strictEqual(result.current, 'second');
+});
