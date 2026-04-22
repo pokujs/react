@@ -1,15 +1,29 @@
 import { afterEach, assert, test } from 'poku';
-import { Suspense, use, useState, useTransition } from 'react';
+import * as React from 'react';
 import { cleanup, fireEvent, render, screen } from '../src/index.ts';
 
 afterEach(cleanup);
 
+const { Suspense, useState, useTransition } = React;
+const useResource =
+  typeof (React as Record<string, unknown>).use === 'function'
+    ? ((React as Record<string, unknown>).use as <T>(value: Promise<T>) => T)
+    : undefined;
+
 const ResourceView = ({ resource }: { resource: Promise<string> }) => {
-  const value = use(resource);
+  if (!useResource) {
+    throw new Error('React.use() is unavailable in this React major.');
+  }
+
+  const value = useResource(resource);
   return <h2>{value}</h2>;
 };
 
-test('renders a resolved use() resource under Suspense', async () => {
+test('renders a resolved use() resource under Suspense', () => {
+  if (!useResource) {
+    return;
+  }
+
   const value = 'Loaded from use() resource';
   const resolvedResource = {
     status: 'fulfilled' as const,
@@ -30,7 +44,7 @@ test('renders a resolved use() resource under Suspense', async () => {
   );
 });
 
-test('runs urgent and transition update pipeline', async () => {
+test('runs urgent and transition update pipeline', () => {
   const TransitionPipeline = () => {
     const [urgentState, setUrgentState] = useState('idle');
     const [deferredState, setDeferredState] = useState('idle');
