@@ -82,8 +82,8 @@ npm i -D jsdom
 
 ```js
 // poku.config.js
-import { defineConfig } from 'poku';
 import { reactTestingPlugin } from '@pokujs/react/plugin';
+import { defineConfig } from 'poku';
 
 export default defineConfig({
   plugins: [
@@ -98,8 +98,8 @@ export default defineConfig({
 
 ```tsx
 // tests/my-component.test.tsx
-import { afterEach, assert, test } from 'poku';
 import { cleanup, render, screen } from '@pokujs/react';
+import { afterEach, assert, test } from 'poku';
 
 afterEach(cleanup);
 
@@ -115,13 +115,13 @@ test('renders a heading', () => {
 
 ### Library Support
 
-| Package | Supported range |
-| ------- | :-------------: |
-| `react` |    `>=18`     |
-| `react-dom` |    `>=18`     |
-| `poku` |   `>=4.1.0`    |
-| `happy-dom` |    `>=20`     |
-| `jsdom` |    `>=22`     |
+| Package     | Supported range |
+| ----------- | :-------------: |
+| `react`     |     `>=18`      |
+| `react-dom` |     `>=18`      |
+| `poku`      |    `>=4.1.0`    |
+| `happy-dom` |     `>=20`      |
+| `jsdom`     |     `>=22`      |
 
 ### Isolation Support
 

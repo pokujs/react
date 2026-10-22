@@ -121,9 +121,7 @@ function runOnce(args, cwd, extraEnv = {}) {
   }
 
   const plainStdout = (result.stdout ?? '').replace(/\u001b\[[0-9;]*m/g, '');
-  const reportedDurationMatch = plainStdout.match(
-    /Duration\s+›\s+([\d.]+)ms/
-  );
+  const reportedDurationMatch = plainStdout.match(/Duration\s+›\s+([\d.]+)ms/);
   const reportedDurationMs = reportedDurationMatch
     ? Number(reportedDurationMatch[1])
     : null;
@@ -143,13 +141,7 @@ function runOnce(args, cwd, extraEnv = {}) {
 
 // ─── scenario runner ────────────────────────────────────────────────────────
 
-function benchmarkScenario(
-  label,
-  args,
-  cwd,
-  extraEnv = {},
-  options = {}
-) {
+function benchmarkScenario(label, args, cwd, extraEnv = {}, options = {}) {
   process.stdout.write(`  ${pad(label, 36)}`);
 
   const measurements = [];

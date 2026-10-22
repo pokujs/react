@@ -1,5 +1,5 @@
-import { afterEach, assert, test } from 'poku';
 import { cleanup, fireEvent, render, screen } from '@pokujs/react';
+import { afterEach, assert, test } from 'poku';
 import React, { Suspense, use, useState, useTransition } from 'react';
 
 afterEach(cleanup);

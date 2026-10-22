@@ -48,7 +48,7 @@
     "test:major:19": "npm install --no-save react@19 react-dom@19 @types/react@19 @types/react-dom@19 && npm test",
     "test:multi-major": "npm run test:major:18 && npm run test:major:19",
     "clean": "rimraf dist",
-    "build": "tsup src/index.ts src/plugin.ts src/react-testing.ts src/dom-setup-happy.ts src/dom-setup-jsdom.ts --format esm --dts --target node20 --sourcemap --clean --tsconfig tsconfig.tsup.json",
+    "build": "tsup src/index.ts src/plugin.ts src/react-testing.ts src/dom-setup-happy.ts src/dom-setup-jsdom.ts --format esm --dts --target node20 --sourcemap --clean --no-splitting --no-config --tsconfig tsconfig.tsup.json",
     "typecheck": "tsc -p tsconfig.build.json --noEmit",
     "format": "prettier --write .",
     "format:check": "prettier --check .",

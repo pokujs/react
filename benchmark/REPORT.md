@@ -4,42 +4,42 @@
 
 ## Environment
 
-| Property | Value |
-|---|---|
-| Node.js | v22.5.1 |
-| Platform | darwin 25.4.0 |
-| CPU | Apple M3 Pro |
-| CPU Cores | 12 |
-| Total RAM | 18.0 GB |
-| Runs/scenario | 7 (trim ±1) |
+| Property      | Value         |
+| ------------- | ------------- |
+| Node.js       | v22.5.1       |
+| Platform      | darwin 25.4.0 |
+| CPU           | Apple M3 Pro  |
+| CPU Cores     | 12            |
+| Total RAM     | 18.0 GB       |
+| Runs/scenario | 7 (trim ±1)   |
 
 ## Scenarios
 
 Each scenario runs the **same 9 React tests** across 5 test files:
 
-| Test File | Tests |
-|---|---|
-| 'counter.test.jsx' | 1 — stateful counter, event interaction |
-| 'hooks.test.jsx' | 2 — custom hook harness + `renderHook` |
-| 'lifecycle.test.jsx' | 2 — `rerender`, `unmount` + effect cleanup |
-| 'context.test.jsx' | 1 — `createContext` + wrapper injection |
-| 'concurrency.test.jsx' | 2 — React 19 `use()` + `useTransition` |
+| Test File              | Tests                                      |
+| ---------------------- | ------------------------------------------ |
+| 'counter.test.jsx'     | 1 — stateful counter, event interaction    |
+| 'hooks.test.jsx'       | 2 — custom hook harness + `renderHook`     |
+| 'lifecycle.test.jsx'   | 2 — `rerender`, `unmount` + effect cleanup |
+| 'context.test.jsx'     | 1 — `createContext` + wrapper injection    |
+| 'concurrency.test.jsx' | 2 — React 19 `use()` + `useTransition`     |
 
 ### Frameworks under test
 
-| Combination | DOM layer | Assertion style |
-|---|---|---|
-| poku + @pokujs/react | happy-dom | `assert.strictEqual` |
-| poku + @pokujs/react | jsdom | `assert.strictEqual` |
-| jest 29 + @testing-library/react | jsdom (jest-environment-jsdom) | `expect().toBe()` |
-| vitest 3 + @testing-library/react | jsdom | `expect().toBe()` |
-| vitest 3 + @testing-library/react | happy-dom | `expect().toBe()` |
+| Combination                       | DOM layer                      | Assertion style      |
+| --------------------------------- | ------------------------------ | -------------------- |
+| poku + @pokujs/react              | happy-dom                      | `assert.strictEqual` |
+| poku + @pokujs/react              | jsdom                          | `assert.strictEqual` |
+| jest 29 + @testing-library/react  | jsdom (jest-environment-jsdom) | `expect().toBe()`    |
+| vitest 3 + @testing-library/react | jsdom                          | `expect().toBe()`    |
+| vitest 3 + @testing-library/react | happy-dom                      | `expect().toBe()`    |
 
 ## Results
 
 | Scenario           | Mean   | Min    | Max    | Stdev  | Peak RSS | vs poku+happy-dom |
-|--------------------|--------|--------|--------|--------|----------|-------------------|
-| poku + happy-dom   | 0.115s | 0.112s | 0.109s | 0.004s | 127.4 MB | *(baseline)*      |
+| ------------------ | ------ | ------ | ------ | ------ | -------- | ----------------- |
+| poku + happy-dom   | 0.115s | 0.112s | 0.109s | 0.004s | 127.4 MB | _(baseline)_      |
 | poku + jsdom       | 0.294s | 0.280s | 0.299s | 0.007s | 172.1 MB | +157%             |
 | jest + jsdom       | 0.843s | 0.768s | 0.879s | 0.041s | 198.8 MB | +636%             |
 | vitest + jsdom     | 0.968s | 0.951s | 0.986s | 0.011s | 147.8 MB | +745%             |
@@ -101,6 +101,7 @@ processes with minimal bootstrap — means cold-start overhead is proportional t
 files, not to the framework's own initialization.
 
 **jest** carries the heaviest startup cost due to:
+
 1. Babel transformation of every TSX file on first run (no persistent cache in this benchmark)
 2. 'jest-worker' process pool initialisation
 3. JSDOM environment setup per test file

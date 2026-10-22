@@ -1,5 +1,5 @@
-import { defineConfig } from 'poku';
 import { reactTestingPlugin } from '@pokujs/react/plugin';
+import { defineConfig } from 'poku';
 
 const dom = process.env.POKU_REACT_TEST_DOM;
 if (!dom) {
