@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.5.2](https://github.com/pokujs/react/compare/react-v1.5.1...react-v1.5.2) (2026-10-22)
+
+
+### Bug Fixes
+
+* stabilize scoped React rendering across runtimes ([#29](https://github.com/pokujs/react/issues/29)) ([8fea107](https://github.com/pokujs/react/commit/8fea10792910e7cda3c3cfe6a0246982dc47ab0e))
+
 ## [1.5.1](https://github.com/pokujs/react/compare/react-v1.5.0...react-v1.5.1) (2026-04-22)
 
 ### Bug Fixes
