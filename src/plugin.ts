@@ -1,13 +1,11 @@
+import type { FrameworkDescriptor } from '@pokujs/dom';
 import type {
   ReactDomAdapter,
   ReactMetricsOptions,
   ReactMetricsSummary,
   ReactTestingPluginOptions,
 } from './plugin-types.ts';
-import {
-  createFrameworkTestingPluginFactory,
-} from '@pokujs/dom';
-import type { FrameworkDescriptor } from '@pokujs/dom';
+import { createFrameworkTestingPluginFactory } from '@pokujs/dom';
 import {
   buildRunnerCommand,
   canHandleRuntime,
@@ -29,6 +27,7 @@ const descriptor: FrameworkDescriptor = {
   runtimeArgBase: 'poku-react',
   metricMessageType: 'POKU_REACT_RENDER_METRIC',
   metricBatchMessageType: 'POKU_REACT_RENDER_METRIC_BATCH',
+  testFileExtensions: ['.ts', '.tsx', '.js', '.jsx'],
 };
 
 const { createTestingPlugin } = createFrameworkTestingPluginFactory(

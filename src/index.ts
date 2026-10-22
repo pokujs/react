@@ -14,5 +14,12 @@ export {
   render,
   renderHook,
   screen,
+  waitFor,
 } from './react-testing.ts';
-export * from './react-testing.ts';
+export type {
+  RenderHookOptions,
+  RenderHookResult,
+  RenderOptions,
+  RenderResult,
+} from './react-testing.ts';
+export * from '@testing-library/dom';

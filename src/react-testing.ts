@@ -1,115 +1,93 @@
 import type {
   fireEvent as baseFireEvent,
   BoundFunctions,
+  PrettyDOMOptions,
   Screen,
 } from '@testing-library/dom';
-import type { ComponentType, PropsWithChildren, ReactElement } from 'react';
+import type { ComponentType, ReactElement, ReactNode } from 'react';
 import type { Root } from 'react-dom/client';
-import { getQueriesForElement, queries } from '@testing-library/dom';
-import * as domTestingLibrary from '@testing-library/dom';
-import * as pokuDom from '@pokujs/dom';
-import React from 'react';
-import { createRoot } from 'react-dom/client';
+import { createRequire } from 'node:module';
 import {
+  configureDomTestingLibrary,
+  createAsFragment,
+  createDebug,
   createRenderMetricsEmitter,
+  createScopedRegistry,
   createScreen,
+  createWaitFor,
   getNow,
   wrapFireEventMethods,
 } from '@pokujs/dom';
+import {
+  configure as configureTestingLibrary,
+  getQueriesForElement,
+  queries,
+} from '@testing-library/dom';
+import * as domTestingLibrary from '@testing-library/dom';
+import React from 'react';
 import { parseRuntimeOptions } from './runtime-options.ts';
+
+// Lazily load `react-dom/client` on first `render()` call rather than at module
+// import time. If a user imports `reactTestingPlugin` from the `@pokujs/react`
+// barrel inside `poku.config.js` under `isolation: 'none'`, the config module is
+// evaluated before `plugin.setup()` installs `window` and `document`. Eagerly
+// importing `react-dom/client` before `window` exists causes React DOM to cache
+// `canUseDOM = false` and permanently disable its synthetic event system.
+let cachedCreateRoot: typeof import('react-dom/client').createRoot | undefined;
+const getCreateRoot = (): typeof import('react-dom/client').createRoot => {
+  if (!cachedCreateRoot) {
+    const req = createRequire(import.meta.url);
+    const reactDomClient = req(
+      'react-dom/client'
+    ) as typeof import('react-dom/client');
+    cachedCreateRoot = reactDomClient.createRoot;
+  }
+  return cachedCreateRoot;
+};
 
 const { act } = React;
 
 export { act };
 
-type WrapperComponent = ComponentType<PropsWithChildren<unknown>>;
+// Wire @testing-library/dom's asyncWrapper and eventWrapper to React's act()
+// so that waitFor(), findBy*(), and fireEvent work without React act() warnings.
+const testingLibraryConfig = {
+  asyncWrapper: async (cb: () => Promise<unknown>) => {
+    const reactGlobal = globalThis as typeof globalThis & {
+      IS_REACT_ACT_ENVIRONMENT?: boolean | undefined;
+    };
+    const previousActEnvironment = reactGlobal.IS_REACT_ACT_ENVIRONMENT;
+    reactGlobal.IS_REACT_ACT_ENVIRONMENT = false;
+    try {
+      const result = await cb();
+      await new Promise<void>((resolve) => {
+        setTimeout(() => {
+          resolve();
+        }, 0);
+      });
+      return result;
+    } finally {
+      reactGlobal.IS_REACT_ACT_ENVIRONMENT = previousActEnvironment;
+    }
+  },
+  eventWrapper: (cb: () => unknown) => {
+    let result: unknown;
+    act(() => {
+      result = cb();
+    });
+    return result;
+  },
+};
+
+configureTestingLibrary(testingLibraryConfig);
+configureDomTestingLibrary(testingLibraryConfig);
+
+type WrapperComponent = ComponentType<{ children: ReactNode }>;
 
 type InternalMounted = {
   root: Root | null;
   container: Element | null;
   ownsContainer: boolean;
-};
-
-const fallbackMountedRoots = new Set<InternalMounted>();
-
-type ScopeSlot<T> = {
-  readonly value: T;
-};
-
-type ScopeLike = {
-  getOrCreateSlot<T>(key: symbol, init: () => T): ScopeSlot<T>;
-  getSlot?<T>(key: symbol): ScopeSlot<T> | undefined;
-  addCleanup?(fn: () => void | Promise<void>): void;
-};
-
-type DomScopeApi = {
-  defineSlotKey?: <T>(name: string) => symbol;
-  getOrCreateScope?: () => ScopeLike | undefined;
-  getCurrentScope?: () => ScopeLike | undefined;
-};
-
-const domScopeApi = pokuDom as unknown as DomScopeApi;
-
-const MOUNTED_ROOTS_SLOT_KEY =
-  typeof domScopeApi.defineSlotKey === 'function'
-    ? domScopeApi.defineSlotKey<Set<InternalMounted>>(
-        '@pokujs/react.mounted-roots'
-      )
-    : undefined;
-
-const CLEANUP_STATE_SLOT_KEY =
-  typeof domScopeApi.defineSlotKey === 'function'
-    ? domScopeApi.defineSlotKey<{ registered: boolean }>(
-        '@pokujs/react.cleanup-registered'
-      )
-    : undefined;
-
-const cleanupMountedRoots = (mountedRoots: Set<InternalMounted>) => {
-  for (const mounted of [...mountedRoots]) {
-    unmountMounted(mountedRoots, mounted);
-  }
-};
-
-const getScopedMountedRoots = (): Set<InternalMounted> | undefined => {
-  if (!MOUNTED_ROOTS_SLOT_KEY) return undefined;
-  if (typeof domScopeApi.getOrCreateScope !== 'function') return undefined;
-
-  const scope = domScopeApi.getOrCreateScope();
-  if (!scope) return undefined;
-
-  const mountedRoots = scope.getOrCreateSlot(MOUNTED_ROOTS_SLOT_KEY, () =>
-    new Set<InternalMounted>()
-  ).value;
-
-  if (!CLEANUP_STATE_SLOT_KEY || typeof scope.addCleanup !== 'function') {
-    return mountedRoots;
-  }
-
-  const cleanupState = scope.getOrCreateSlot(CLEANUP_STATE_SLOT_KEY, () => ({
-    registered: false,
-  })).value;
-
-  if (!cleanupState.registered) {
-    cleanupState.registered = true;
-    scope.addCleanup(() => {
-      cleanupMountedRoots(mountedRoots);
-      metrics.flushMetricBuffer();
-    });
-  }
-
-  return mountedRoots;
-};
-
-const getMountedRoots = (): Set<InternalMounted> =>
-  getScopedMountedRoots() ?? fallbackMountedRoots;
-
-const getCurrentScopedMountedRoots = (): Set<InternalMounted> | undefined => {
-  if (!MOUNTED_ROOTS_SLOT_KEY) return undefined;
-  if (typeof domScopeApi.getCurrentScope !== 'function') return undefined;
-
-  const scope = domScopeApi.getCurrentScope();
-  const slot = scope?.getSlot?.<Set<InternalMounted>>(MOUNTED_ROOTS_SLOT_KEY);
-  return slot?.value;
 };
 
 const unmountMounted = (
@@ -131,6 +109,26 @@ const unmountMounted = (
   }
 };
 
+const cleanupMountedRoots = (mountedRoots: Set<InternalMounted>) => {
+  for (const mounted of [...mountedRoots]) {
+    unmountMounted(mountedRoots, mounted);
+  }
+};
+
+const metrics = createRenderMetricsEmitter({
+  runtimeOptions: () => parseRuntimeOptions(),
+  metricsStateKey: Symbol.for('@pokujs/react.metrics-runtime-state'),
+  metricsBatchMessageType: 'POKU_REACT_RENDER_METRIC_BATCH',
+});
+
+const registry = createScopedRegistry<InternalMounted>({
+  name: '@pokujs/react.mounted-roots',
+  onCleanup: (mountedRoots) => {
+    cleanupMountedRoots(mountedRoots);
+    metrics.flushMetricBuffer();
+  },
+});
+
 const getComponentName = (ui: ReactElement) => {
   const uiType = ui.type;
   if (!uiType) return 'AnonymousComponent';
@@ -139,13 +137,6 @@ const getComponentName = (ui: ReactElement) => {
   const typed = uiType as { displayName?: string; name?: string };
   return typed.displayName || typed.name || 'AnonymousComponent';
 };
-
-const runtimeOptions = parseRuntimeOptions();
-const metrics = createRenderMetricsEmitter({
-  runtimeOptions,
-  metricsStateKey: Symbol.for('@pokujs/react.metrics-runtime-state'),
-  metricsBatchMessageType: 'POKU_REACT_RENDER_METRIC_BATCH',
-});
 
 const wrapUi = (ui: ReactElement, Wrapper?: WrapperComponent) =>
   Wrapper ? React.createElement(Wrapper, null, ui) : ui;
@@ -162,20 +153,26 @@ export type RenderResult = BoundFunctions<typeof queries> & {
   baseElement: HTMLElement;
   rerender: (ui: ReactElement) => void;
   unmount: () => void;
+  asFragment: () => DocumentFragment;
+  debug: (
+    element?: Array<Element | HTMLDocument> | Element | HTMLDocument,
+    maxLength?: number,
+    options?: PrettyDOMOptions
+  ) => void;
 };
 
 export const render = (
   ui: ReactElement,
   options: RenderOptions = {}
 ): RenderResult => {
-  const mountedRoots = getMountedRoots();
-  const baseElement = options.baseElement || document.body;
+  const mountedRoots = registry.getItems();
+  const baseElement = options.baseElement || options.container || document.body;
   const container = options.container || document.createElement('div');
   const ownsContainer = !options.container;
 
   if (ownsContainer) baseElement.appendChild(container);
 
-  const root = createRoot(container);
+  const root = getCreateRoot()(container);
   const mounted: InternalMounted = { root, container, ownsContainer };
   mountedRoots.add(mounted);
 
@@ -214,6 +211,8 @@ export const render = (
     baseElement,
     rerender,
     unmount,
+    asFragment: createAsFragment(container),
+    debug: createDebug(baseElement),
   };
 };
 
@@ -229,23 +228,19 @@ export type RenderHookResult<Result, Props = unknown> = {
   unmount: () => void;
 };
 
-export const renderHook = <
-  Result,
-  Props extends Record<string, unknown> = Record<string, unknown>,
->(
-  hook: (props: Props) => Result,
+export const renderHook = <Result, Props = unknown>(
+  hook: (initialProps: Props) => Result,
   options: RenderHookOptions<Props> = {}
 ): RenderHookResult<Result, Props> => {
   let currentResult!: Result;
+  let currentProps = options.initialProps as Props;
 
-  const HookHarness = (props: Props) => {
-    currentResult = hook(props);
+  const HookHarness = () => {
+    currentResult = hook(currentProps);
     return null;
   };
 
-  const initialProps = options.initialProps ?? ({} as Props);
-  const view = render(React.createElement(HookHarness, initialProps), options);
-  let currentProps = initialProps;
+  const view = render(React.createElement(HookHarness), options);
 
   const resultRef: { current: Result } = {
     get current() {
@@ -259,17 +254,17 @@ export const renderHook = <
     },
     rerender(nextProps = currentProps) {
       currentProps = nextProps;
-      view.rerender(React.createElement(HookHarness, nextProps));
+      view.rerender(React.createElement(HookHarness));
     },
     unmount: view.unmount,
   };
 };
 
 export const cleanup = () => {
-  const scopedMountedRoots = getCurrentScopedMountedRoots();
+  const scopedMountedRoots = registry.getScopedItems();
   if (scopedMountedRoots) cleanupMountedRoots(scopedMountedRoots);
 
-  cleanupMountedRoots(fallbackMountedRoots);
+  cleanupMountedRoots(registry.fallbackItems);
 
   metrics.flushMetricBuffer();
 };
@@ -291,11 +286,14 @@ wrapFireEventMethods(
   baseFireEventInstance as unknown as Record<string, unknown>,
   (invoke: () => unknown) => {
     let result: unknown;
-    act(() => { result = invoke(); });
+    act(() => {
+      result = invoke();
+    });
     return result;
   }
 );
 
 export const fireEvent = wrappedFireEvent;
+export const waitFor = createWaitFor(domTestingLibrary.waitFor);
 
 export * from '@testing-library/dom';

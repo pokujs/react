@@ -59,7 +59,7 @@ test('buildRunnerCommand injects dom setup for bun without tsx import', async ()
   assert.strictEqual(result.shouldHandle, true);
   assert.deepStrictEqual(result.command, [
     'bun',
-    '--preload /tmp/dom-setup.ts',
+    '--preload=/tmp/dom-setup.ts',
     'tests/example.test.tsx',
     '--poku-react-metrics=1',
   ]);
@@ -100,11 +100,11 @@ test('buildRunnerCommand leaves unsupported runtime unchanged', async () => {
 });
 
 test('buildRunnerCommand leaves non-react extension unchanged', async () => {
-  const original = ['node', 'tests/example.test.ts'];
+  const original = ['node', 'tests/example.test.mjs'];
   const result = __internal.buildRunnerCommand({
     runtime: 'node',
     command: original,
-    file: 'tests/example.test.ts',
+    file: 'tests/example.test.mjs',
     domSetupPath: '/tmp/dom-setup.ts',
     runtimeOptionArgs: [],
   });

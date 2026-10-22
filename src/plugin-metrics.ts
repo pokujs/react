@@ -28,7 +28,8 @@ export const isRenderMetricBatchMessage = (message: unknown) =>
 export const buildRuntimeOptionArgs = (
   options: ReactTestingPluginOptions,
   metricsOptions: NormalizedMetricsOptions
-) => buildCoreRuntimeOptionArgs(options, metricsOptions, runtimeOptionArgPrefixes);
+) =>
+  buildCoreRuntimeOptionArgs(options, metricsOptions, runtimeOptionArgPrefixes);
 
 export const printMetricsSummary = (summary: ReactMetricsSummary) =>
   printCoreMetricsSummary(summary, '@pokujs/react');

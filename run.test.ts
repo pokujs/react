@@ -14,7 +14,7 @@ assert.strictEqual(happyCode, 0, 'happy-dom suite');
 if (typeof Deno === 'undefined') {
   const jsdomCode = await poku('tests', {
     noExit: true,
-    isolation: 'none',
+    isolation: 'process',
     plugins: [reactTestingPlugin({ dom: 'jsdom' })],
   });
 

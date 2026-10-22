@@ -71,3 +71,21 @@ test('renderHook.rerender keeps result.current live after destructuring', async 
 
   assert.strictEqual(result.current, 'second');
 });
+
+test('renderHook supports zero-arg hooks and primitive initialProps, plus asFragment/screen.debug', () => {
+  const zeroArg = renderHook(() => useToggle());
+  assert.strictEqual(zeroArg.result.current.enabled, false);
+
+  const primitiveProp = renderHook((count: number) => count * 2, {
+    initialProps: 5,
+  });
+  assert.strictEqual(primitiveProp.result.current, 10);
+  primitiveProp.rerender(7);
+  assert.strictEqual(primitiveProp.result.current, 14);
+
+  const view = render(<HookHarness />);
+  const fragment = view.asFragment();
+  assert.strictEqual(fragment.querySelector('button')?.textContent, 'Toggle');
+  assert.strictEqual(typeof screen.debug, 'function');
+  assert.strictEqual(typeof view.debug, 'function');
+});
