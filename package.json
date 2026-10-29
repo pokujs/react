@@ -102,14 +102,14 @@
     }
   },
   "devDependencies": {
-    "@happy-dom/global-registrator": "^20.8.9",
+    "@happy-dom/global-registrator": "^21.0.4",
     "@ianvs/prettier-plugin-sort-imports": "^4.7.0",
     "@types/jsdom": "^28.0.1",
     "@types/node": "^25.5.0",
     "@types/react": "^19.2.14",
     "@types/react-dom": "^19.2.3",
     "cross-env": "^10.1.0",
-    "happy-dom": "^20.8.9",
+    "happy-dom": "^21.0.4",
     "jsdom": "^26.1.0",
     "poku": "^4.3.0",
     "prettier": "^3.6.2",
